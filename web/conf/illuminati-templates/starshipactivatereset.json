@@ -1,0 +1,9 @@
+{
+  "templateVersion": 1,
+  "serviceName": "starship-activatereset",
+  "rootServicePath": "starship-activatereset",
+  "paths": {
+    "starship-activatereset.logging.encrypt.key": {},
+    "starship-activatereset.play.secret": {}
+  }
+}

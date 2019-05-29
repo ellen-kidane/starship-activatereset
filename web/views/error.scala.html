@@ -1,0 +1,20 @@
+@**
+* Default page for 500 Internal Server Error responses, in production mode.
+*@
+@(error: play.api.UsefulException)
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>@error.title</title>
+    </head>
+    <body style="text-align: center">
+        <h1>Oops</h1>
+        <p id="detail">
+            We're sorry, this page can not be displayed.<br>
+        </p>
+        <p id="cid">
+            <sup>Correlation-Id: @error.id</sup>
+        </p>
+    </body>
+</html>

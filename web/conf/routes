@@ -1,0 +1,9 @@
+# Health Check
+GET            /rest/starship-activatereset/v1/monitor                                               com.rallyhealth.starship-activatereset.controller.HealthCheckController.monitorPlay
+
+#Logback
+# See: https://github.com/AudaxHealthInc/play-module-logback
+->             /internal/starship-activatereset/v1/logback                                        	 logback.Routes
+
+# CORS Support
+#OPTIONS        /*url                                                                com.rallyhealth.controller.OptionController.options(url: String)

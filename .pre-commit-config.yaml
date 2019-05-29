@@ -1,0 +1,14 @@
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: v0.9.5
+    hooks:
+    -   id: check-json
+    -   id: check-xml
+    -   id: check-yaml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+-   repo: git@github.com:AudaxHealthInc/pre-commit-hooks.git
+    sha: v0.0.2
+    hooks:
+    -   id: scalariform
+        args:
+        - thunderdome

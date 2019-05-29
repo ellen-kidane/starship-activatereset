@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Logback configuration resources:
+- Configuration - http://logback.qos.ch/manual/configuration.html
+- Appenders - http://logback.qos.ch/manual/configuration.html
+- Encoders - http://logback.qos.ch/manual/encoders.html
+-->
+<!--
+    THE PRODUCTION LOGGER CONFIG FOR MESOS/SPLUNK!
+
+    This file is intended to be used as an explicit override.
+
+    Running from sbt in prod mode:
+        sbt 'project whatever' 'start -Dlogger.file=./conf/logback-mesos.xml'
+
+    Running from root of classpath:
+        java -Dlogback.configurationFile=logback-mesos.xml -cp "lib/*" com.rallyhealth.MyApp
+
+    Bundling into sbt-native-packager:
+        import com.typesafe.sbt.packager.Keys.bashScriptExtraDefines
+        bashScriptExtraDefines += """addJava "-Dlogback.configurationFile=${LOGBACK_FILE:-default/logback-mesos.xml}""""
+-->
+<!-- Scanning is disabled because this file is embedded in the JAR which causes scanning to fail -->
+<configuration scan="false">
+
+    <property name="PRODUCT_NAME" value="starship-activatereset" />
+    <property name="APP_NAME" value="starship-activatereset" />
+    <property resource="rally-logback.properties"/>
+
+    <!--
+    Logback does not allow included files to alter pre-defined log levels, however, it does allow them to change
+    variables. The log levels defined in this file are encouraged to also define variables to allow overriding.
+
+    Variable names resolve in the following order of precedence:
+    1. Included files. e.g. <property name="ROOT_LOGBACK_LEVEL" value="error" />
+    2. JVM system properties, e.g. java -DROOT_LOGBACK_LEVEL=error
+    3. OS environment
+    Reference: http://logback.qos.ch/manual/configuration.html#scopes for more options.
+
+    Variables:
+    * ROOT_LOGBACK_LEVEL = Level used for the "root" logger
+    * RALLY_LOGBACK_LEVEL = Level used for the Rally logger, which logs only Rally code
+      file, allowing all configuration to be set in the include file. This is the only way to change the <root>: you
+      cannot override the <root> in the include file without removing it from here. Note that this must be a
+      "context" variable, e.g. <property scope="context" name="DISABLE_DEFAULT_LOGBACK_CONFIG" value="whatever" />
+      (Also, this is not named "enable" because that would be more complex for the condition below.)
+
+    Reference: http://logback.qos.ch/manual/configuration.html#variableSubstitution
+    -->
+
+    <include optional="true" file="${LOGBACK_EXTERNAL_CONFIG_DIR:-/etc/careverge/logback}/logback-include-global.xml"/>
+    <include optional="true" file="${LOGBACK_EXTERNAL_CONFIG_DIR:-/etc/careverge/logback}/logback-include-${APP_NAME}.xml"/>
+
+    <!-- Mesos captures logs from the console. It ignores any files. -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Exception output is limited in the console output because Scala creates very deep stack traces. The
+            value was chosen because it keeps a few lines of Scala. -->
+            <!-- The key/value pairs 'product', 'service', and 'env' are introduced for Splunk integration. -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger{15}: %msg [%mdc] %n%rEx{24}</pattern>
+            <immediateFlush>true</immediateFlush>
+        </encoder>
+    </appender>
+
+    <!-- http://logback.qos.ch/manual/appenders.html#AsyncAppender -->
+    <appender name="async-console" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="console" />
+    </appender>
+
+    <!-- Root level will include third-party code, so we only want to see warnings or worse -->
+    <root level="${ROOT_LOGBACK_LEVEL:-warn}">
+        <appender-ref ref="async-console"/>
+    </root>
+
+    <!-- We want more verbose logging for Rally's code. -->
+    <!-- See Variables comments above for logback's rules about overriding these. -->
+    <logger name="com.careverge" level="${RALLY_LOGBACK_LEVEL:-info}"/>
+    <logger name="com.rallyhealth" level="${RALLY_LOGBACK_LEVEL:-info}"/>
+
+</configuration>
